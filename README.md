@@ -1,5 +1,7 @@
 # SteelSense AI
 
+**🔗 Live demo: [steelsense-ai-mocha.vercel.app](https://steelsense-ai-mocha.vercel.app)**
+
 An LLM-powered diagnostic assistant for structural health monitoring data from
 magnetic/Hall-effect stress sensors — grounded in a curated domain knowledge base
 via RAG, reasoning with tool-calling over a real (if small) anomaly-detection
@@ -120,8 +122,10 @@ and writes full results to `evals/results.json` — see
 
 ## Deployment
 
-Backend on [Railway](https://railway.app), frontend on [Vercel](https://vercel.com),
-both deployed from this GitHub repo.
+**✅ Live:** frontend on [Vercel](https://steelsense-ai-mocha.vercel.app), backend
+on [Railway](https://web-production-69666.up.railway.app), both deployed from this
+GitHub repo. Verified end-to-end — including a full `/api/chat` round trip through
+the live agent and a correct CORS preflight from the deployed frontend's origin.
 
 **Backend (Railway):**
 1. New Project → Deploy from GitHub repo → select this repo.
@@ -142,8 +146,6 @@ both deployed from this GitHub repo.
 **Then**, back in Railway, set `ALLOWED_ORIGINS` to the Vercel URL (comma-separated
 if there's more than one, e.g. a preview + production URL) and redeploy, so CORS
 allows the deployed frontend to call the backend.
-
-**Live demo:** _(link goes here once deployed)_
 
 ## Example queries and outputs
 
