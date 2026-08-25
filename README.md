@@ -22,13 +22,17 @@ RAG, tool-calling agents, a real (if simple) data/analysis pipeline, and evals,
 connected to a technical area I already know well enough to judge whether the AI
 layer is actually adding value or just talking.
 
-## Screenshot
+## Screenshots
 
 ![SteelSense AI dashboard — fleet status list and per-sensor chart with anomaly highlighting](docs/screenshot-dashboard.png)
 
 *Fleet status ranked by concern score, with a time-series chart shading detected
-spike/drift windows. See the chat panel in action in
-[docs/evals.md](docs/evals.md), or run it locally (below) to try it yourself.*
+spike/drift windows.*
+
+![SteelSense AI chat panel — a grounded, markdown-formatted weekly summary citing specific sensors and knowledge-base entries](docs/screenshot-chat.png)
+
+*A grounded answer to "Summarize the structural health of the bridge this week,"
+citing concrete numbers and knowledge-base entries by title.*
 
 ## Features
 
