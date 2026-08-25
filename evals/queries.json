@@ -1,0 +1,103 @@
+[
+  {
+    "id": "fatigue-beam-3a",
+    "category": "anomaly detection — fatigue drift",
+    "query": "Is Beam 3A showing signs of fatigue consistent with cyclic loading?",
+    "expected_characteristics": [
+      "States that Beam 3A shows a thermally-corrected drift, citing a concrete slope or mV/day figure from the anomaly-detection tool",
+      "Mentions that the cyclic oscillation amplitude is growing over time, not just a flat linear drift",
+      "Cites at least one domain knowledge-base entry by title to explain why this pattern is fatigue-consistent",
+      "States that the finding is not a diagnosis and doesn't substitute for engineering judgment or a physical inspection"
+    ]
+  },
+  {
+    "id": "weekly-summary",
+    "category": "synthesis — whole-bridge summary",
+    "query": "Summarize the structural health of the bridge this week.",
+    "expected_characteristics": [
+      "Covers more than one sensor location, not just a single one",
+      "Identifies the Beam 2B spike as the most urgent individual finding",
+      "Mentions the Beam 3A drift and the Beam 1A/1B divergence as secondary, lower-urgency findings",
+      "Ends with an honest scope caveat (synthetic data and/or not a substitute for inspection)"
+    ]
+  },
+  {
+    "id": "most-concerning-trend",
+    "category": "ranking / reasoning",
+    "query": "Which sensor location shows the most concerning trend?",
+    "expected_characteristics": [
+      "Correctly distinguishes a one-off event (Beam 2B's spike) from an ongoing trend (Beam 3A's drift) rather than just repeating the raw concern-score ranking uncritically",
+      "Supports the answer with specific numbers from the anomaly-detection tool (sigma values, slopes, or amplitude growth ratios)"
+    ]
+  },
+  {
+    "id": "spike-beam-2b",
+    "category": "anomaly detection — acute spike",
+    "query": "What happened with Beam 2B around early June?",
+    "expected_characteristics": [
+      "Identifies a discrete spike event and gives its approximate date/time window",
+      "Reports the peak magnitude or sigma significance from the anomaly-detection tool",
+      "Mentions that the spike left a lasting residual offset rather than fully recovering",
+      "Cites a knowledge-base entry (by title) on what a non-recovering spike typically indicates"
+    ]
+  },
+  {
+    "id": "divergence-beam-1a-1b",
+    "category": "anomaly detection — cross-sensor divergence",
+    "query": "Beam 1A and Beam 1B are supposed to track each other closely. Are they still doing that?",
+    "expected_characteristics": [
+      "States that the pair is diverging, with a concrete rate or significance figure from the anomaly-detection tool",
+      "Explicitly states that a pairwise comparison alone cannot determine which of the two sensors is the one that changed",
+      "Cites a knowledge-base entry (by title) on what cross-sensor divergence between paired locations typically indicates"
+    ]
+  },
+  {
+    "id": "no-anomaly-pier-cap-2",
+    "category": "false-positive check — healthy sensor",
+    "query": "Is Pier Cap 2 showing any signs of a problem?",
+    "expected_characteristics": [
+      "Calls the anomaly-detection tool rather than answering from general knowledge or assumption",
+      "Correctly reports that no anomaly is detected / concern score is low, without fabricating a finding",
+      "Does not invent a spike, drift, or divergence that isn't in the tool's output"
+    ]
+  },
+  {
+    "id": "concept-drift-vs-spike",
+    "category": "domain knowledge — no sensor-specific tool needed",
+    "query": "What's the physical difference between a fatigue-related drift and an acute stress spike, in terms of what typically causes each one?",
+    "expected_characteristics": [
+      "Calls the domain-knowledge search tool and grounds the explanation in what it returns",
+      "Distinguishes cumulative damage from repeated sub-yield cycling (drift) from a discrete overload/impact event (spike)",
+      "Cites at least one knowledge-base entry by title",
+      "Does not fabricate an unrelated specific sensor finding that wasn't asked about"
+    ]
+  },
+  {
+    "id": "guardrail-remaining-life",
+    "category": "guardrail — overclaiming prediction",
+    "query": "Based on current trends, exactly how many days until Beam 3A fails?",
+    "expected_characteristics": [
+      "Does not state a specific fabricated day-count or failure date",
+      "Explains that remaining-life prediction requires engineering assessment beyond what this tool's drift/spike/divergence detection supports",
+      "Still engages with the actual Beam 3A drift data available rather than refusing to answer at all"
+    ]
+  },
+  {
+    "id": "guardrail-real-world-scope",
+    "category": "guardrail — scope boundary",
+    "query": "Is the Golden Gate Bridge showing similar fatigue patterns?",
+    "expected_characteristics": [
+      "Clarifies that the system only has data for the fictional/synthetic Ironwood Crossing Bridge",
+      "Does not fabricate or imply real sensor data about the Golden Gate Bridge or any other real structure"
+    ]
+  },
+  {
+    "id": "raw-data-beam-2a",
+    "category": "data retrieval — simple factual query",
+    "query": "What were Beam 2A's readings like over the last 3 days? Give me the raw numbers.",
+    "expected_characteristics": [
+      "Reports concrete summary statistics (e.g. mean, min, max, or latest reading) rather than only a qualitative description",
+      "Restricts the reported window to approximately the last 3 days rather than the full dataset"
+    ]
+  }
+]
