@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { postChat } from '../api';
 import type { ChatMessage } from '../types';
 
@@ -56,7 +57,11 @@ export default function ChatPanel() {
         )}
         {messages.map((message, i) => (
           <div key={i} className={`chat-bubble ${message.role}`}>
-            {message.content}
+            {message.role === 'assistant' ? (
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            ) : (
+              message.content
+            )}
           </div>
         ))}
         {pending && <div className="chat-bubble assistant pending">Thinking…</div>}

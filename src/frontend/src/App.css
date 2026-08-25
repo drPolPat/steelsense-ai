@@ -142,6 +142,35 @@
   border-bottom-left-radius: 2px;
 }
 
+.chat-bubble.assistant > :first-child {
+  margin-top: 0;
+}
+.chat-bubble.assistant > :last-child {
+  margin-bottom: 0;
+}
+.chat-bubble.assistant p,
+.chat-bubble.assistant ul,
+.chat-bubble.assistant ol {
+  margin: 0.6em 0;
+}
+.chat-bubble.assistant ul,
+.chat-bubble.assistant ol {
+  padding-left: 1.3em;
+}
+.chat-bubble.assistant li {
+  margin: 0.2em 0;
+}
+.chat-bubble.assistant strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.chat-bubble.assistant code {
+  background: var(--surface-1);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
 .chat-bubble.error {
   border: 1px solid var(--status-critical);
   color: var(--status-critical);
