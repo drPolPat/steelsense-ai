@@ -24,6 +24,16 @@ def _knowledge_base() -> KnowledgeBase:
     return KnowledgeBase()
 
 
+def warm_up() -> None:
+    """Force every lazily-built, cached resource a tool call would otherwise
+    build on first use -- the Chroma knowledge base (which downloads its
+    embedding model on first use) and the sensor data/analysis caches.
+    Intended to be called once at process startup so the first real request
+    isn't the one paying for it."""
+    _knowledge_base()
+    analyze_all_sensors()
+
+
 def _resolve_or_error(sensor_id: str) -> str:
     resolved = resolve_sensor_id(sensor_id)
     if resolved is None:

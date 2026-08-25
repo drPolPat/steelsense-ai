@@ -118,6 +118,33 @@ Requires `ANTHROPIC_API_KEY`. Runs the 10-query eval set against the live agent
 and writes full results to `evals/results.json` — see
 [`docs/evals.md`](docs/evals.md) for methodology and the latest results.
 
+## Deployment
+
+Backend on [Railway](https://railway.app), frontend on [Vercel](https://vercel.com),
+both deployed from this GitHub repo.
+
+**Backend (Railway):**
+1. New Project → Deploy from GitHub repo → select this repo.
+2. Railway auto-detects Python from `requirements.txt` and uses the `Procfile`'s
+   start command (`uvicorn src.backend.api.main:app --host 0.0.0.0 --port $PORT`).
+3. Set environment variables: `ANTHROPIC_API_KEY` (required), `ALLOWED_ORIGINS`
+   (set once you have the Vercel URL — see below).
+4. Settings → Networking → Generate Domain to get a public URL.
+
+**Frontend (Vercel):**
+1. New Project → Import the same GitHub repo.
+2. Set **Root Directory** to `src/frontend` (this is a monorepo — the frontend
+   isn't at the repo root).
+3. Framework preset: Vite (auto-detected). Build/output settings can stay default.
+4. Environment variable: `VITE_API_BASE_URL` = the Railway backend URL from above.
+5. Deploy. Vercel gives you a public URL.
+
+**Then**, back in Railway, set `ALLOWED_ORIGINS` to the Vercel URL (comma-separated
+if there's more than one, e.g. a preview + production URL) and redeploy, so CORS
+allows the deployed frontend to call the backend.
+
+**Live demo:** _(link goes here once deployed)_
+
 ## Example queries and outputs
 
 These are real outputs from a live run against the checked-in sample data (lightly

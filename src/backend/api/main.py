@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from ..agent.agent import ask
+from ..agent.tools import warm_up
 from ..data.analysis import analyze_all_sensors, analyze_sensor
 from ..data.ingestion import get_sensor_readings, list_sensors, resolve_sensor_id
 
@@ -68,6 +69,11 @@ class ReadingPoint(BaseModel):
     timestamp: str
     reading_mv: float
     temperature_c: float
+
+
+@app.on_event("startup")
+def _warm_up() -> None:
+    warm_up()
 
 
 @app.get("/api/health")
