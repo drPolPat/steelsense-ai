@@ -1,0 +1,67 @@
+{
+  "structure": {
+    "structure_id": "ironwood-crossing",
+    "name": "Ironwood Crossing Bridge",
+    "type": "steel truss highway bridge",
+    "location": "Fictional, illustrative location -- not a real structure",
+    "sensor_type": "embedded single-axis Hall-effect magnetic stress sensor"
+  },
+  "synthetic": true,
+  "disclaimer": "All data in this file and the accompanying sensor_readings.csv is synthetically generated for demo/portfolio purposes. It does not represent any real structure, sensor deployment, or measurement.",
+  "time_range": {
+    "start": "2026-05-01T00:00:00",
+    "end": "2026-06-30T00:00:00",
+    "sample_interval": "1h"
+  },
+  "reference_temperature_c": 15.0,
+  "sensors": [
+    {
+      "sensor_id": "beam-1a",
+      "location": "Beam 1A",
+      "description": "Main span beam, north side, near-shore end",
+      "baseline_mv": 120.0
+    },
+    {
+      "sensor_id": "beam-1b",
+      "location": "Beam 1B",
+      "description": "Main span beam, south side, near-shore end (paired with Beam 1A)",
+      "baseline_mv": 119.6
+    },
+    {
+      "sensor_id": "beam-2a",
+      "location": "Beam 2A",
+      "description": "Main span beam, north side, mid-span",
+      "baseline_mv": 121.5
+    },
+    {
+      "sensor_id": "beam-2b",
+      "location": "Beam 2B",
+      "description": "Main span beam, south side, mid-span",
+      "baseline_mv": 121.1
+    },
+    {
+      "sensor_id": "beam-3a",
+      "location": "Beam 3A",
+      "description": "Main span beam, north side, far-shore end",
+      "baseline_mv": 118.8
+    },
+    {
+      "sensor_id": "beam-3b",
+      "location": "Beam 3B",
+      "description": "Main span beam, south side, far-shore end",
+      "baseline_mv": 119.0
+    },
+    {
+      "sensor_id": "pier-cap-1",
+      "location": "Pier Cap 1",
+      "description": "Pier cap, near-shore support",
+      "baseline_mv": 95.4
+    },
+    {
+      "sensor_id": "pier-cap-2",
+      "location": "Pier Cap 2",
+      "description": "Pier cap, far-shore support",
+      "baseline_mv": 95.9
+    }
+  ]
+}

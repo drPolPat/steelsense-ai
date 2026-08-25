@@ -1,0 +1,71 @@
+{
+  "note": "Synthetic ground truth describing exactly how each anomaly was injected during data generation. This file is for evaluating the agent's answers after the fact -- it is not given to the agent as input.",
+  "random_seed": 42,
+  "sensors": {
+    "beam-1a": {
+      "location": "Beam 1A",
+      "has_injected_anomaly": false,
+      "anomaly_note": null,
+      "ground_truth": null
+    },
+    "beam-1b": {
+      "location": "Beam 1B",
+      "has_injected_anomaly": true,
+      "anomaly_note": "Localized divergence starting day 40: slowly pulls away from its normally-correlated pair, Beam 1A, suggesting a developing localized issue rather than a structure-wide effect.",
+      "ground_truth": {
+        "category": "cross_sensor_divergence",
+        "paired_with": "beam-1a",
+        "start_day": 40,
+        "rate_per_day_mv": 0.09
+      }
+    },
+    "beam-2a": {
+      "location": "Beam 2A",
+      "has_injected_anomaly": false,
+      "anomaly_note": null,
+      "ground_truth": null
+    },
+    "beam-2b": {
+      "location": "Beam 2B",
+      "has_injected_anomaly": true,
+      "anomaly_note": "Acute stress spike around day 35 (~3 hour event), consistent with a sudden overload or impact, followed by a small residual offset indicating minor permanent deformation.",
+      "ground_truth": {
+        "category": "acute_stress_spike",
+        "spike_start_day": 35,
+        "spike_duration_hours": 3.0,
+        "spike_magnitude_mv": 4.5,
+        "residual_fraction": 0.18
+      }
+    },
+    "beam-3a": {
+      "location": "Beam 3A",
+      "has_injected_anomaly": true,
+      "anomaly_note": "Gradual fatigue signature: cyclic oscillation amplitude grows over the full 60-day window alongside a slowly rising mean offset, consistent with cumulative fatigue under repeated cyclic (traffic) loading.",
+      "ground_truth": {
+        "category": "gradual_fatigue_drift",
+        "cycle_period_hours": 6.0,
+        "amplitude_start_mv": 0.15,
+        "amplitude_growth_per_day_mv": 0.012,
+        "mean_drift_per_day_mv": 0.03
+      }
+    },
+    "beam-3b": {
+      "location": "Beam 3B",
+      "has_injected_anomaly": false,
+      "anomaly_note": null,
+      "ground_truth": null
+    },
+    "pier-cap-1": {
+      "location": "Pier Cap 1",
+      "has_injected_anomaly": false,
+      "anomaly_note": null,
+      "ground_truth": null
+    },
+    "pier-cap-2": {
+      "location": "Pier Cap 2",
+      "has_injected_anomaly": false,
+      "anomaly_note": null,
+      "ground_truth": null
+    }
+  }
+}
