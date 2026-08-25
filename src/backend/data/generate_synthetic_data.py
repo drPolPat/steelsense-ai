@@ -266,10 +266,36 @@ SENSORS: list[SensorProfile] = [
     ),
 ]
 
+# Symmetric beam pairs that share a live-load signal below (see
+# _generate_pair_live_load) and are therefore normally correlated. Only
+# Beam 1A/1B are modeled this way -- they're the pair the scenario actually
+# exercises for cross-sensor divergence; the other locations aren't claimed
+# to be structurally paired, so leaving them uncorrelated keeps their own
+# drift/spike detection thresholds uninflated by an unrelated shared signal.
+PAIR_GROUPS: list[tuple[str, str]] = [
+    ("beam-1a", "beam-1b"),
+]
+
 
 # ---------------------------------------------------------------------------
 # Generation
 # ---------------------------------------------------------------------------
+
+def _generate_pair_live_load(t_hours: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+    """A shared traffic-load signal for one symmetric beam pair: a daily
+    rush-hour-ish cycle, a weekday/weekend weekly cycle, and a slow random
+    walk. Both sensors in a pair receive the *same* series on top of their
+    own independent noise, which is what makes them normally correlated --
+    the real-world basis for "two sensors that usually track each other"
+    that cross-sensor divergence detection relies on.
+    """
+    phase = rng.uniform(0, 2 * np.pi)
+    daily = 0.7 * np.sin(2 * np.pi * t_hours / 24 - phase)
+    weekly = 0.5 * np.sin(2 * np.pi * t_hours / (24 * 7) - phase / 2)
+    walk = np.cumsum(rng.normal(0, 0.02, size=len(t_hours)))
+    walk -= walk.mean()
+    return daily + weekly + walk
+
 
 def _generate_ambient_temperature(timestamps: pd.DatetimeIndex, rng: np.random.Generator) -> np.ndarray:
     """Shared ambient temperature series: diurnal cycle + slow random walk
@@ -301,13 +327,20 @@ def generate_dataset() -> tuple[pd.DataFrame, dict]:
 
     temperature_c = _generate_ambient_temperature(timestamps, rng)
 
+    pair_live_load: dict[str, np.ndarray] = {}
+    for sensor_a, sensor_b in PAIR_GROUPS:
+        shared = _generate_pair_live_load(t_hours, rng)
+        pair_live_load[sensor_a] = shared
+        pair_live_load[sensor_b] = shared
+
     rows = []
     for sensor in SENSORS:
         noise = rng.normal(0, sensor.noise_std_mv, size=len(timestamps))
         thermal_response = sensor.thermal_coeff_mv_per_c * (temperature_c - REFERENCE_TEMP_C)
         anomaly_offset = sensor.anomaly(t_hours, t_days) if sensor.anomaly else no_anomaly(t_hours, t_days)
+        live_load = pair_live_load.get(sensor.sensor_id, np.zeros_like(t_hours))
 
-        reading_mv = sensor.baseline_mv + thermal_response + anomaly_offset + noise
+        reading_mv = sensor.baseline_mv + thermal_response + anomaly_offset + live_load + noise
 
         rows.append(
             pd.DataFrame(
