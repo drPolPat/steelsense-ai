@@ -22,10 +22,11 @@ layer is actually adding value or just talking.
 
 ## Screenshot
 
-*(Not included in this snapshot of the repo — the environment this was built in
-couldn't capture and save a screenshot file. The setup instructions below get the
-full chat + dashboard UI running locally in a couple of minutes if you want to see
-it directly.)*
+![SteelSense AI dashboard — fleet status list and per-sensor chart with anomaly highlighting](docs/screenshot-dashboard.png)
+
+*Fleet status ranked by concern score, with a time-series chart shading detected
+spike/drift windows. See the chat panel in action in
+[docs/evals.md](docs/evals.md), or run it locally (below) to try it yourself.*
 
 ## Features
 
