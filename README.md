@@ -100,6 +100,42 @@ regenerate it to run the app. If you want to (it's deterministic, seeded):
 python -m src.backend.data.generate_synthetic_data
 ```
 
+### Backend, with Docker
+
+An alternative to the venv setup above — same backend, containerized. Useful if
+you don't want a local Python install, or want something closer to how this would
+actually deploy.
+
+```bash
+cd steelsense-ai
+cp .env.example .env          # then fill in ANTHROPIC_API_KEY
+docker compose up --build
+```
+
+That builds the image and starts the backend on `http://localhost:8000`, reading
+`ANTHROPIC_API_KEY` (and optionally `ANTHROPIC_MODEL`, `ALLOWED_ORIGINS`) from the
+`.env` file `docker-compose.yml` picks up automatically. Or without Compose:
+
+```bash
+docker build -t steelsense-backend .
+docker run -p 8000:8000 -e ANTHROPIC_API_KEY=your-key-here steelsense-backend
+```
+
+The `Dockerfile` is a two-stage build (install deps in one image, copy just the
+finished virtualenv + app code into a clean runtime image), runs as a non-root
+user, and never bakes any secret into a layer — `ANTHROPIC_API_KEY` is read from
+the environment at container start, not at build time. See
+[`docs/architecture.md`](docs/architecture.md) for more on why it's set up this way.
+
+> **Note on this repo's own testing:** the Dockerfile's full dependency tree
+> (~90 packages, including the heavier ones like `onnxruntime` and `tokenizers`)
+> was verified to have prebuilt Linux wheels for Python 3.12 — the build should
+> succeed cleanly with no compilation step. The actual `docker build` /
+> `docker run` / `/api/health` round trip, however, was **not** run end-to-end in
+> the environment this was built in (blocked by a BIOS-level virtualization
+> setting unrelated to the Docker setup itself, not by anything in these files).
+> If you hit an issue running it, that's the gap to look at first.
+
 ### Frontend
 
 In a second terminal:

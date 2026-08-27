@@ -109,6 +109,19 @@ chart that shades detected spike/drift windows and overlays the peer sensor's li
 when divergence is flagged, so the pattern the agent describes in text is also
 visible on the chart.
 
+**`Dockerfile` / `docker-compose.yml`** — the backend is containerized: a two-stage
+build (install dependencies into a venv in one image, copy just that finished venv
+plus the app code into a clean runtime image) so build tooling and pip's cache
+never ship, running as a non-root user with secrets read from the environment at
+container start rather than baked into a layer. This isn't required to run the
+project (the venv setup works fine on its own), but it buys three things a
+from-source setup doesn't: portability (no "works on my machine" Python-version or
+OS-level dependency drift), an environment that matches what most real deployment
+targets actually run (Railway's own build is closer to this than to a bare venv),
+and a build that's reproducible from a clean slate rather than accumulating local
+state over time. See the README's **Backend, with Docker** section for the exact
+commands, including an honest note on what was and wasn't verified end-to-end.
+
 ## Request lifecycle: one chat question
 
 ```mermaid
@@ -152,6 +165,12 @@ produces a final grounded answer.
 - **`claude-opus-5` as the default agent model** (configurable via `ANTHROPIC_MODEL`)
   — the eval judge deliberately runs on a *different, cheaper* model
   (`claude-haiku-4-5`) so grading isn't the same model checking its own work.
+- **Single uvicorn process in the container, no gunicorn worker pool** — the RAG
+  knowledge base and analysis caches are built in-process
+  (`agent/tools.warm_up`); N gunicorn workers would each hold their own copy of
+  that in-memory state rather than share one, which isn't a win at this app's
+  traffic scale. Worth revisiting if this ever needed to handle real concurrent
+  load.
 
 ## Known limitations
 
@@ -163,3 +182,9 @@ produces a final grounded answer.
 - The eval set is 10 hand-authored queries graded once by an LLM judge, not a
   statistically powered benchmark — see `docs/evals.md`'s limitations section for
   the full honest accounting.
+- The Docker setup was verified as far as static analysis allows (every
+  dependency in the full transitive tree has a prebuilt Linux wheel for Python
+  3.12, so the build shouldn't need to compile anything), but an actual
+  `docker build` / `docker run` / health-check round trip wasn't completed in the
+  environment this was built in -- blocked by a BIOS-level virtualization setting
+  on that machine, unrelated to the Docker files themselves.

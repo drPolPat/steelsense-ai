@@ -1,0 +1,31 @@
+# Version control / tooling
+.git
+.github
+.claude
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets -- never sent to the build context, never baked into an image
+.env
+.env.*
+!.env.example
+
+# Frontend -- not part of the backend image
+src/frontend/
+
+# Docs, screenshots, eval output -- not needed to run the API
+docs/
+evals/results.json
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db

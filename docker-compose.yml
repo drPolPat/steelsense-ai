@@ -1,0 +1,13 @@
+# Local dev: `docker compose up --build` gets a working backend on
+# http://localhost:8000. Reads ANTHROPIC_API_KEY (and the optional vars
+# below) from a .env file in this directory if present, or from the
+# shell environment -- see .env.example. Never edit in a real key here.
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY is required -- set it in a local .env or your shell}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
