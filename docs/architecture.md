@@ -120,7 +120,7 @@ OS-level dependency drift), an environment that matches what most real deploymen
 targets actually run (Railway's own build is closer to this than to a bare venv),
 and a build that's reproducible from a clean slate rather than accumulating local
 state over time. See the README's **Backend, with Docker** section for the exact
-commands, including an honest note on what was and wasn't verified end-to-end.
+commands and what was verified end-to-end.
 
 ## Request lifecycle: one chat question
 
@@ -182,9 +182,11 @@ produces a final grounded answer.
 - The eval set is 10 hand-authored queries graded once by an LLM judge, not a
   statistically powered benchmark — see `docs/evals.md`'s limitations section for
   the full honest accounting.
-- The Docker setup was verified as far as static analysis allows (every
-  dependency in the full transitive tree has a prebuilt Linux wheel for Python
-  3.12, so the build shouldn't need to compile anything), but an actual
-  `docker build` / `docker run` / health-check round trip wasn't completed in the
-  environment this was built in -- blocked by a BIOS-level virtualization setting
-  on that machine, unrelated to the Docker files themselves.
+- The Docker setup has been verified end-to-end: `docker compose up --build`,
+  then `/api/health`, `/api/sensors`, `/api/analysis`, and a full `/api/chat`
+  round trip all confirmed working against the running container. An earlier
+  version left the RAG embedding-model download to happen at container startup;
+  real testing caught that this made a cold container's first boot take ~70s
+  before it would answer *any* request (including a health check), which is easy
+  to mistake for the app being broken -- fixed by pre-fetching that model at
+  build time instead (see the Dockerfile).

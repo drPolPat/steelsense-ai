@@ -43,6 +43,14 @@ COPY data/sample ./data/sample
 RUN chown -R appuser:appuser /app
 USER appuser
 
+# Pre-fetch the RAG layer's ~80MB embedding model at build time instead of
+# leaving it to download on first use. Without this, the container's first
+# boot takes ~70s of blocking work inside FastAPI's startup event (see
+# agent/tools.warm_up) before uvicorn will answer *any* request, including
+# /api/health -- easy to mistake for the app being broken. Runs as appuser
+# so the cache lands under the same $HOME the app uses at runtime.
+RUN python -c "import chromadb; c = chromadb.EphemeralClient(); col = c.create_collection('warmup'); col.add(ids=['1'], documents=['warm up the embedding model'])"
+
 EXPOSE 8000
 
 # Secrets (ANTHROPIC_API_KEY, etc.) are read from the environment at

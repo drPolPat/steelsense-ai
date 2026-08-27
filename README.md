@@ -124,17 +124,16 @@ docker run -p 8000:8000 -e ANTHROPIC_API_KEY=your-key-here steelsense-backend
 The `Dockerfile` is a two-stage build (install deps in one image, copy just the
 finished virtualenv + app code into a clean runtime image), runs as a non-root
 user, and never bakes any secret into a layer — `ANTHROPIC_API_KEY` is read from
-the environment at container start, not at build time. See
-[`docs/architecture.md`](docs/architecture.md) for more on why it's set up this way.
+the environment at container start, not at build time. The RAG layer's embedding
+model is pre-fetched *at build time* rather than on first request, so a freshly
+started container answers `/api/health` immediately instead of taking ~70s on its
+first boot. See [`docs/architecture.md`](docs/architecture.md) for more on why
+it's set up this way.
 
-> **Note on this repo's own testing:** the Dockerfile's full dependency tree
-> (~90 packages, including the heavier ones like `onnxruntime` and `tokenizers`)
-> was verified to have prebuilt Linux wheels for Python 3.12 — the build should
-> succeed cleanly with no compilation step. The actual `docker build` /
-> `docker run` / `/api/health` round trip, however, was **not** run end-to-end in
-> the environment this was built in (blocked by a BIOS-level virtualization
-> setting unrelated to the Docker setup itself, not by anything in these files).
-> If you hit an issue running it, that's the gap to look at first.
+**Verified end-to-end**: `docker compose up --build`, then a cold container
+answered `/api/health` in ~20ms (no startup delay), `/api/sensors` and
+`/api/analysis` returned real data, and a full `/api/chat` round trip returned a
+correct, grounded answer through the containerized agent.
 
 ### Frontend
 
