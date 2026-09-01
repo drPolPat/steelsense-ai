@@ -17,12 +17,20 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from ..agent.agent import ask
 from ..agent.tools import warm_up
 from ..data.analysis import analyze_all_sensors, analyze_sensor
 from ..data.ingestion import get_sensor_readings, list_sensors, resolve_sensor_id
 
 load_dotenv()  # picks up ANTHROPIC_API_KEY etc. from a local .env for `ask()`, called per-request
+
+# AGENT_IMPLEMENTATION picks which of the two equivalent agent
+# implementations backs /api/chat -- "manual" (default, agent.py's
+# hand-written tool loop) or "langgraph" (agent_langgraph.py's
+# StateGraph). See docs/architecture.md for what they trade off.
+if os.environ.get("AGENT_IMPLEMENTATION", "manual") == "langgraph":
+    from ..agent.agent_langgraph import ask
+else:
+    from ..agent.agent import ask
 
 app = FastAPI(
     title="SteelSense AI API",

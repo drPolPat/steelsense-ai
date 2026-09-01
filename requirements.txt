@@ -1,7 +1,16 @@
 numpy==2.1.3
 pandas==2.2.3
 chromadb==1.5.9
-anthropic==1.0.0
 fastapi==0.141.1
 uvicorn[standard]==0.52.4
 python-dotenv==1.2.3
+
+# anthropic is pinned to <1.0.0 because langchain-anthropic (below)
+# requires anthropic<1.0.0,>=0.120.0. Everything both agent
+# implementations (agent.py and agent_langgraph.py) use is stable across
+# that boundary; see docs/architecture.md's LangGraph comparison section
+# for how this pin came about.
+anthropic==0.125.0
+langgraph==1.2.11
+langchain-anthropic==1.6.1
+langchain-core==1.6.0

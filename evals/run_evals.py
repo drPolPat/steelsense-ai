@@ -7,7 +7,12 @@ to avoid self-grading bias. See docs/evals.md for methodology notes and a
 summary of results.
 
 Usage:
-    python -m evals.run_evals
+    python -m evals.run_evals                          # manual agent (agent.py)
+    AGENT_IMPLEMENTATION=langgraph python -m evals.run_evals   # agent_langgraph.py
+
+Results are written to evals/results.json (manual) or
+evals/results_langgraph.json (langgraph) -- separate files so a run of one
+implementation never overwrites the other's results.
 """
 
 from __future__ import annotations
@@ -20,13 +25,19 @@ from pathlib import Path
 import anthropic
 from dotenv import load_dotenv
 
-from src.backend.agent.agent import ask
-
 load_dotenv()
+
+AGENT_IMPLEMENTATION = os.environ.get("AGENT_IMPLEMENTATION", "manual")
+if AGENT_IMPLEMENTATION == "langgraph":
+    from src.backend.agent.agent_langgraph import ask
+else:
+    from src.backend.agent.agent import ask
 
 JUDGE_MODEL = os.environ.get("EVAL_JUDGE_MODEL", "claude-haiku-4-5")
 QUERIES_PATH = Path(__file__).parent / "queries.json"
-RESULTS_PATH = Path(__file__).parent / "results.json"
+RESULTS_PATH = Path(__file__).parent / (
+    "results_langgraph.json" if AGENT_IMPLEMENTATION == "langgraph" else "results.json"
+)
 
 JUDGE_SYSTEM_PROMPT = """You are grading answers from a structural-health-monitoring \
 assistant against a checklist of expected characteristics. For each checklist item, \
@@ -92,6 +103,8 @@ def run() -> dict:
     queries = json.loads(QUERIES_PATH.read_text(encoding="utf-8"))
     client = anthropic.Anthropic()
 
+    print(f"Agent implementation: {AGENT_IMPLEMENTATION}\n")
+
     results = []
     for spec in queries:
         print(f"Running: {spec['id']} ...")
@@ -120,6 +133,7 @@ def run() -> dict:
 
     summary = {
         "run_at": datetime.now(timezone.utc).isoformat(),
+        "agent_implementation": AGENT_IMPLEMENTATION,
         "judge_model": JUDGE_MODEL,
         "n_queries": len(results),
         "n_passed": sum(r["passed"] for r in results),

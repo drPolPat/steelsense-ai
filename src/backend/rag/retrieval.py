@@ -15,9 +15,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import chromadb
+from .. import _native_ext_shims
 
-from .knowledge_base import KNOWLEDGE_BASE, KnowledgeDoc
+_native_ext_shims.install()  # must run before importing chromadb -- see that module's docstring
+
+import chromadb  # noqa: E402
+
+from .knowledge_base import KNOWLEDGE_BASE, KnowledgeDoc  # noqa: E402
 
 _COLLECTION_NAME = "steelsense_knowledge"
 

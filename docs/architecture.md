@@ -98,6 +98,11 @@ to read start to finish. The system prompt requires every anomaly claim to be
 backed by `run_anomaly_detection` (not the model's own read of summary stats) and
 every physical explanation to cite a named knowledge-base entry.
 
+`agent_langgraph.py` is a second, genuinely equivalent implementation of the same
+agent built on LangGraph instead — same four tools, same system prompt, same
+default model, different loop-construction mechanism. See **Manual loop vs.
+LangGraph** below for the comparison and which one this project actually uses.
+
 **`src/backend/api/main.py`** — FastAPI routes with no business logic of their own;
 they validate input and call straight into the modules above. `/api/sensors` and
 `/api/sensors/{id}/readings` back the dashboard's chart; `/api/analysis` backs the
@@ -172,6 +177,99 @@ produces a final grounded answer.
   traffic scale. Worth revisiting if this ever needed to handle real concurrent
   load.
 
+## Manual loop vs. LangGraph
+
+`agent.py` and `agent_langgraph.py` are genuinely equivalent, not one real
+implementation and one toy comparison: same four tools (both call the identical
+`tools.execute_tool` dispatcher — the LangGraph version's `@tool`-decorated
+wrappers are a thin adapter, not a reimplementation), same `SYSTEM_PROMPT`, same
+default model, same 10-query eval set. Switch between them with
+`AGENT_IMPLEMENTATION=manual|langgraph` (see `api/main.py`), or run either
+directly: `python -m src.backend.agent.agent "<question>"` vs.
+`python -m src.backend.agent.agent_langgraph "<question>"`.
+
+```mermaid
+flowchart LR
+    subgraph manual["agent.py -- manual"]
+        m1(["while loop"]) --> m2["messages.create()"]
+        m2 -->|stop_reason == tool_use| m3["for block in content:<br/>execute_tool(...)"]
+        m3 --> m2
+        m2 -->|stop_reason == end_turn| m4(["return text"])
+    end
+    subgraph lg["agent_langgraph.py -- LangGraph"]
+        l1(["START"]) --> l2["agent node<br/>(ChatAnthropic.invoke)"]
+        l2 -->|tools_condition| l3["tools node<br/>(ToolNode)"]
+        l3 --> l2
+        l2 -->|tools_condition| l4(["END"])
+    end
+```
+
+**What LangGraph genuinely does for you:**
+
+- **The tool-execution dispatch loop.** `ToolNode` matches each tool call in the
+  model's response to the right Python function by name, invokes it, and formats
+  the result as a `ToolMessage` -- the exact bookkeeping `agent.py`'s manual
+  `for block in response.content: if block.type == "tool_use"` loop does by hand.
+- **Conditional routing as data, not control flow.** `add_conditional_edges` +
+  `tools_condition` express "loop back if there are tool calls, otherwise stop"
+  declaratively. The manual version expresses the identical logic as an
+  `if response.stop_reason == "tool_use"` branch -- same decision, different
+  shape (a graph edge vs. an `if` statement).
+- **Recursion safety built in.** `recursion_limit` + `GraphRecursionError` is the
+  same guard `agent.py`'s hand-rolled `MAX_TOOL_ITERATIONS` counter provides, just
+  provided by the framework instead of written once and reused.
+- **A message-state reducer.** `MessagesState`'s `add_messages` annotation
+  handles appending new messages to the conversation automatically; the manual
+  version does the equivalent with explicit `messages.append(...)` calls.
+
+**What's roughly equivalent, just expressed differently:**
+
+- **Tool schemas.** LangChain's `@tool` decorator infers the JSON schema Claude
+  needs from type hints and the docstring; `tools.py`'s `TOOL_DEFINITIONS` writes
+  that same schema by hand as a dict. Same information, different authoring
+  ergonomics -- neither is more capable than the other here.
+- **System prompt handling.** Both just hand Claude one string.
+- **Business logic and grounding quality.** Identical, by construction -- both
+  call the same tools, so both are checked against the same eval set for a fair
+  comparison, not just "both compile."
+
+**A real cost this comparison surfaced, not a hypothetical one:** adding
+LangGraph forced `anthropic` down from `1.0.0` to `0.125.0` project-wide
+(`langchain-anthropic` hard-requires `anthropic<1.0.0`), and pulled in three
+small native-extension dependencies (`uuid_utils`, `xxhash`, `orjson`, needed
+only for LangSmith tracing and the hosted LangGraph Platform client -- neither of
+which this project uses) that needed a defensive shim
+(`_native_ext_shims.py`) to work around a Windows security policy on the
+development machine. None of that is a LangGraph *bug* -- it's the real,
+concrete shape of taking on a framework's dependency surface, and it's the kind
+of cost that's invisible until you actually do the integration rather than just
+read about it.
+
+**Eval results:** manual 10/10 queries fully passed; LangGraph 9/10 (see
+`evals/results.json` vs. `evals/results_langgraph.json`). The one LangGraph miss
+was `concept-drift-vs-spike`, where the judge dinged an otherwise well-grounded
+answer for citing an additional, properly-sourced knowledge-base entry (sensor
+hysteresis) that went slightly beyond what the question asked -- not a
+hallucination, just broader scope than the checklist wanted. Not a meaningful
+quality gap between the two agents; both are working correctly.
+
+**Which one this project actually uses, and why:** the manual loop is the
+default (`AGENT_IMPLEMENTATION=manual`), and I'd genuinely choose it here, not
+just because it's what shipped first. SteelSense AI's agent is a linear
+loop over four tools with no branching beyond "call a tool or don't," no
+multi-turn memory across requests, and no multi-agent orchestration --
+which means this project uses almost none of what LangGraph actually buys you
+(checkpointed state across sessions, human-in-the-loop interrupts, subgraphs,
+built-in visualization/streaming of a genuinely complex graph). Against that,
+the manual version is ~100 lines with a single dependency, its stack traces
+point at this project's own code rather than framework internals, and there's no
+version-compatibility surface to manage. I'd reach for LangGraph the moment the
+agent's actual shape needed one of those things -- e.g. persisted conversation
+memory across sessions, a second specialized subagent, or a step that pauses for
+human approval before running -- because at that point the graph earns the
+dependency instead of just hosting an equivalent-but-costlier version of a loop
+four tools don't need framework support to manage.
+
 ## Known limitations
 
 - All data is synthetic and clearly labeled as such throughout (`data/sample/README.md`,
@@ -190,3 +288,11 @@ produces a final grounded answer.
   before it would answer *any* request (including a health check), which is easy
   to mistake for the app being broken -- fixed by pre-fetching that model at
   build time instead (see the Dockerfile).
+- `anthropic` is pinned below 1.0.0 project-wide because `langchain-anthropic`
+  requires it -- a real constraint from adding the LangGraph comparison, not a
+  choice either agent implementation would otherwise make. The manual agent was
+  re-verified end-to-end on the downgraded version before accepting the pin.
+  `_native_ext_shims.py` similarly exists only because of a Windows security
+  policy on the development machine, not a real portability requirement -- it's
+  a no-op (confirmed via try/except around each real import) anywhere that
+  policy doesn't apply, including the deployed Railway backend.

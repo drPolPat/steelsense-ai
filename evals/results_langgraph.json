@@ -1,0 +1,274 @@
+{
+  "run_at": "2026-09-01T08:00:46.496075+00:00",
+  "agent_implementation": "langgraph",
+  "judge_model": "claude-haiku-4-5",
+  "n_queries": 10,
+  "n_passed": 9,
+  "results": [
+    {
+      "id": "fatigue-beam-3a",
+      "category": "anomaly detection \u2014 fatigue drift",
+      "query": "Is Beam 3A showing signs of fatigue consistent with cyclic loading?",
+      "answer": "**Short answer: yes, the pattern is consistent with cyclic-loading fatigue \u2014 but \"consistent with\" is not the same as a diagnosis.**\n\nThe thermally-corrected pipeline flags Beam 3A with `gradual_fatigue_drift` and `growing_cyclic_amplitude`:\n\n- **Drift:** +0.0303 mV/day, 3.21\u03c3 above its baseline noise band (0.4334 mV std), projecting ~1.39 mV of cumulative change over the analysis window. Thermal coefficient is 0.1908 mV/\u00b0C, and this is after correction \u2014 so it isn't an ambient-temperature artifact.\n- **Growing cyclic amplitude:** amplitude has grown by a factor of **1.55**, at ~0.00767 mV/day\u00b2. This is the part that specifically points toward cyclic loading rather than a static offset.\n- **No spikes**, and **no divergence** from its peer Beam 3B (2.7\u03c3, below threshold) \u2014 notably, the 3A\u20133B gap is opening at 0.0305 mV/day, so 3B may be worth watching too even though it hasn't tripped.\n\n**Why this reads as fatigue-consistent:** per *Cyclic Fatigue Failure Mechanisms in Structural Steel*, fatigue accumulates from repeated cycles well below yield \u2014 there's no single overload event to spot, which matches the absence of spikes here. A growing cyclic amplitude at fixed traffic loading is what you'd expect if local compliance is increasing (e.g., stable crack growth at a stress concentration), and per *The Magnetoelastic (Villari) Effect in Ferromagnetic Steel* the Hall-effect signal tracks stress-driven permeability change, so widening stress swings show up as widening voltage swings.\n\n**Caveats worth taking seriously.** *Practical Limitations of Magnetic Stress Sensing* notes hysteresis and nearby ferromagnetic objects (vehicles, equipment) can both inflate apparent amplitude, so mounting or environmental causes aren't ruled out. And per *Structural Health Monitoring: General Principles*, this tool is realistically reliable only at detection and rough localization \u2014 not severity or remaining life.\n\n**Recommended handling** (from *Interpreting Flags: When to Escalate* and *Bridge Inspection & Monitoring Standards*): a fatigue-consistent drift sustained over weeks isn't urgent within a short window, but the trend matters \u2014 continue monitoring, and if the slope and amplitude growth persist, schedule a physical inspection of Beam 3A's connections and weld toes. Treat this as a prompt for where a qualified engineer looks next, not a condition assessment. (All data here is synthetic, generated for this demo.)",
+      "checklist": [
+        {
+          "characteristic": "States that Beam 3A shows a thermally-corrected drift, citing a concrete slope or mV/day figure from the anomaly-detection tool",
+          "met": true,
+          "reason": "The answer explicitly states 'Drift: +0.0303 mV/day, 3.21\u03c3 above its baseline noise band' and notes it is 'after correction' for thermal effects (thermal coefficient 0.1908 mV/\u00b0C), with a projected cumulative change of ~1.39 mV. This is a concrete slope figure from the anomaly-detection tool."
+        },
+        {
+          "characteristic": "Mentions that the cyclic oscillation amplitude is growing over time, not just a flat linear drift",
+          "met": true,
+          "reason": "The answer clearly states 'Growing cyclic amplitude: amplitude has grown by a factor of **1.55**, at ~0.00767 mV/day\u00b2' and explicitly contrasts this from a static offset, noting that 'A growing cyclic amplitude at fixed traffic loading' is the key observation distinguishing fatigue behavior."
+        },
+        {
+          "characteristic": "Cites at least one domain knowledge-base entry by title to explain why this pattern is fatigue-consistent",
+          "met": true,
+          "reason": "The answer cites multiple domain knowledge sources by title: '*Cyclic Fatigue Failure Mechanisms in Structural Steel*' (to explain why there are no spikes), '*The Magnetoelastic (Villari) Effect in Ferromagnetic Steel*' (to explain why widening stress swings show up as widening voltage swings), and '*Practical Limitations of Magnetic Stress Sensing*' (to note caveats). These support why the pattern is fatigue-consistent."
+        },
+        {
+          "characteristic": "States that the finding is not a diagnosis and doesn't substitute for engineering judgment or a physical inspection",
+          "met": true,
+          "reason": "The answer opens with 'but \"consistent with\" is not the same as a diagnosis' and states in the Caveats section that 'this tool is realistically reliable only at detection and rough localization \u2014 not severity or remaining life.' The Recommended handling section explicitly states 'Treat this as a prompt for where a qualified engineer looks next, not a condition assessment' and recommends scheduling 'a physical inspection.'"
+        }
+      ],
+      "met": 4,
+      "total": 4,
+      "passed": true
+    },
+    {
+      "id": "weekly-summary",
+      "category": "synthesis \u2014 whole-bridge summary",
+      "query": "Summarize the structural health of the bridge this week.",
+      "answer": "# Ironwood Crossing \u2014 Weekly Structural Health Summary\n\n*(Synthetic demo data \u2014 this is not a real structure or real measurements.)*\n\n**Overall:** 8 sensors monitored, 3 carrying flags after thermal correction. Pier Cap 1 and 2, Beam 2A, and Beam 3B are all clean \u2014 no drift, no spikes, no divergence (Pier Cap 2 is the quietest at 0.23\u03c3). The concerns are all on the main span beams.\n\n## 1. Beam 2B \u2014 acute spike with residual offset (highest concern, 10.15\u03c3)\nA single event on 2026-06-05, 01:00\u201302:00, peaked at **4.455 mV \u2014 10.15\u03c3** above baseline noise, and left a **lasting residual offset of 0.691 mV** that did not recover.\n\nPer *Distinguishing Drift, Spike, and Divergence Signatures*, a spike that partially but not fully recovers is consistent with a discrete overload or impact event causing localized plastic deformation. *Interpreting Flags: When to Escalate* singles this exact shape out as **the pattern most worth prompt human follow-up**, precisely because the non-recovery suggests something changed durably. This is the item I'd put in front of an engineer first.\n\n## 2. Beams 1A / 1B \u2014 cross-sensor divergence (3.57\u03c3)\nThis normally-correlated near-shore pair is separating at **0.0386 mV/day**, projecting to a **1.774 mV gap**. Divergence points to a *localized* issue \u2014 a developing crack, loosened connection, or load redistribution \u2014 rather than something structure-wide.\n\nImportant caveat, which the tool flags explicitly: **a widening gap is symmetric and cannot tell you which sensor moved.** Beam 1B does show the larger standalone slope (0.0414 mV/day, 2.75\u03c3) versus 1A's essentially flat 0.0027 mV/day, which is suggestive, but resolving this genuinely requires a third reference \u2014 the wider network, longer history, or physical inspection.\n\n## 3. Beam 3A \u2014 fatigue-consistent drift (3.21\u03c3)\nSustained drift of **0.0303 mV/day (3.21\u03c3, projected +1.391 mV)**, and notably the cyclic-load **amplitude is also growing (ratio 1.55)**. That combination \u2014 monotonic drift *plus* growing cyclic amplitude \u2014 is the signature *Distinguishing Drift, Spike, and Divergence Signatures* associates with cumulative fatigue damage under normal repeated loading. *Cyclic Fatigue Failure Mechanisms in Structural Steel* adds the relevant point: fatigue accumulates from cycles well below yield strength, so a structure can look fine event-by-event and still be accruing damage. Per the escalation guidance, this is rarely urgent within a single week but the **trend is what matters** \u2014 continue monitoring, and schedule inspection if it persists across multiple weeks.\n\n## Suggested triage order\n1. **Beam 2B** \u2014 prompt follow-up on the 06-05 event and its residual offset.\n2. **Beams 1A/1B** \u2014 narrow attention to the near-shore pair; needs a third reference to attribute.\n3. **Beam 3A** \u2014 track week-over-week; escalate to inspection if drift and amplitude growth continue.\n\n**These are pattern matches, not diagnoses.** Each one tells you *where to look*, not what's wrong. Per *Bridge Inspection & Monitoring Standards*, sensor-based monitoring supplements the NBIS/AASHTO inspection cycle and is best treated as a prompt to schedule inspection \u2014 it does not substitute for a certified inspector's assessment or engineering judgment.",
+      "checklist": [
+        {
+          "characteristic": "Covers more than one sensor location, not just a single one",
+          "met": true,
+          "reason": "The answer covers multiple sensor locations: Pier Cap 1 and 2, Beam 2A, Beam 3B, Beam 2B, Beams 1A/1B, and Beam 3A. It explicitly states '8 sensors monitored' and discusses findings across at least 6 distinct locations."
+        },
+        {
+          "characteristic": "Identifies the Beam 2B spike as the most urgent individual finding",
+          "met": true,
+          "reason": "The answer explicitly identifies Beam 2B spike as the most urgent finding, stating 'highest concern, 10.15\u03c3' and placing it first in the triage order with 'prompt follow-up' language. The detailed explanation of the 4.455 mV spike with 0.691 mV residual offset makes this the primary concern."
+        },
+        {
+          "characteristic": "Mentions the Beam 3A drift and the Beam 1A/1B divergence as secondary, lower-urgency findings",
+          "met": true,
+          "reason": "The answer identifies both Beam 3A drift (0.0303 mV/day with growing cyclic amplitude, 3.21\u03c3) and Beams 1A/1B divergence (0.0386 mV/day, 3.57\u03c3) as secondary findings. The triage order places them at positions 2 and 3, with language indicating lower urgency than Beam 2B ('rarely urgent within a single week', 'track week-over-week')."
+        },
+        {
+          "characteristic": "Ends with an honest scope caveat (synthetic data and/or not a substitute for inspection)",
+          "met": true,
+          "reason": "The answer ends with explicit scope caveats: 'These are pattern matches, not diagnoses' and 'sensor-based monitoring supplements...and is best treated as a prompt to schedule inspection \u2014 it does not substitute for a certified inspector's assessment.' It also opens with '(Synthetic demo data \u2014 this is not a real structure or real measurements.)'"
+        }
+      ],
+      "met": 4,
+      "total": 4,
+      "passed": true
+    },
+    {
+      "id": "most-concerning-trend",
+      "category": "ranking / reasoning",
+      "query": "Which sensor location shows the most concerning trend?",
+      "answer": "**Beam 2B** ranks highest by concern score (10.15), though strictly speaking its finding is an *event*, not a trend \u2014 so I'll flag both it and the top trend.\n\n**Beam 2B \u2014 acute spike with residual offset (highest priority).** A single event on 2026-06-05 01:00\u201302:00 peaked at 4.455 mV, or **10.15\u03c3** above that sensor's baseline noise (std 0.394 mV), and it did **not** fully recover: a residual offset of **+0.691 mV** persists afterward. Per *Distinguishing Drift, Spike, and Divergence Signatures*, a spike that partially but not fully recovers is consistent with a discrete overload or impact event causing localized plastic deformation. *Interpreting Flags: When to Escalate* calls this specific shape \u2014 a large spike leaving a lasting residual offset \u2014 the pattern most worth prompt human follow-up.\n\n**Beam 3A \u2014 the most concerning genuine trend.** Thermally-corrected drift of **+0.0303 mV/day** at **3.21\u03c3** (\u22481.39 mV projected over the window), *plus* growing cyclic amplitude (**1.55\u00d7 growth ratio**, +0.0077 mV/day\u00b2). Per *Cyclic Fatigue Failure Mechanisms in Structural Steel* and the diagnostics entry above, a monotonic drift with a simultaneously growing cyclic-load oscillation is the signature most consistent with cumulative fatigue damage accumulating under ordinary repeated loading \u2014 which can build well below yield strength with no single alarming overload. The knowledge base characterizes this as warranting sustained monitoring and a scheduled inspection if it continues, rather than being urgent within a short window.\n\nAlso worth noting: the **Beam 1A / 1B pair** is diverging at **3.57\u03c3** (gap slope 0.0386 mV/day, ~1.77 mV projected). That narrows attention to that location pair, but a pairwise comparison can only show the pair is separating \u2014 it cannot tell us which of the two moved. Resolving that needs a third reference: the wider network, longer history, or physical inspection.\n\nTwo caveats: these patterns narrow down *where to look*, they are not diagnoses of a root cause, and this system doesn't substitute for engineering judgment or a certified inspection. And all data here is synthetic, generated for a portfolio demo.",
+      "checklist": [
+        {
+          "characteristic": "Correctly distinguishes a one-off event (Beam 2B's spike) from an ongoing trend (Beam 3A's drift) rather than just repeating the raw concern-score ranking uncritically",
+          "met": true,
+          "reason": "The answer explicitly distinguishes Beam 2B's spike as 'an *event*, not a trend' and contrasts it with Beam 3A as 'the most concerning genuine trend.' The assistant acknowledges that Beam 2B ranks highest by concern score but correctly notes this distinction, explaining that Beam 3A's monotonic drift with growing cyclic amplitude represents cumulative fatigue\u2014a true trend pattern. This demonstrates critical thinking beyond raw ranking."
+        },
+        {
+          "characteristic": "Supports the answer with specific numbers from the anomaly-detection tool (sigma values, slopes, or amplitude growth ratios)",
+          "met": true,
+          "reason": "The answer provides multiple specific numerical values from anomaly detection: Beam 2B spike at 10.15\u03c3 with 0.455 mV peak and +0.691 mV residual offset; Beam 3A drift of +0.0303 mV/day at 3.21\u03c3 with 1.55\u00d7 growth ratio and +0.0077 mV/day\u00b2 cyclic amplitude growth; Beam 1A/1B divergence at 3.57\u03c3 with 0.0386 mV/day gap slope. These specific metrics directly support the conclusions."
+        }
+      ],
+      "met": 2,
+      "total": 2,
+      "passed": true
+    },
+    {
+      "id": "spike-beam-2b",
+      "category": "anomaly detection \u2014 acute spike",
+      "query": "What happened with Beam 2B around early June?",
+      "answer": "**Beam 2B (main span, south side, mid-span) \u2014 a discrete spike on 5 June 2026.**\n\nThe thermally-corrected pipeline flags one event: a spike between **01:00 and 02:00 on 2026-06-05**, peaking at **4.46 mV \u2014 10.15\u03c3** above this sensor's baseline noise band (baseline noise std is only 0.39 mV). Crucially, it did not fully recover: a **residual offset of +0.69 mV** persisted afterward, and the tool marks `lasting_offset: true`. That single event drives the sensor's concern score of 10.15.\n\nNothing else on Beam 2B is flagged. Drift is **not** detected (slope 0.025 mV/day, 2.95\u03c3, with cyclic amplitude actually shrinking slightly \u2014 growth ratio 0.96), and divergence from its paired sensor Beam 2A is **not** detected (gap slope 0.025 mV/day, 2.13\u03c3). So this reads as one acute event rather than an ongoing trend.\n\nOn what that shape typically means, per the knowledge-base entry **\"Distinguishing Drift, Spike, and Divergence Signatures\"**: a sudden spike that partially but not fully recovers is consistent with a discrete overload or impact event that may have caused localized plastic deformation. And per **\"Interpreting Flags: When to Escalate\"**, a spike well outside the noise band that leaves a lasting residual offset is the pattern *most* worth prompt human follow-up, precisely because the residual suggests something changed for good rather than flexing and springing back.\n\nTwo caveats worth stating plainly: a 10\u03c3 spike with residual offset is the kind of finding that's easy to overweight \u2014 the pattern **narrows down what to investigate** (mid-span south side, around that timestamp \u2014 e.g. an overload vehicle crossing, an impact, or a sensor/mount disturbance), but it is not a diagnosis of damage. This is synthetic demo data, and this kind of analysis is meant to direct where a qualified engineer looks next, not substitute for engineering judgment or a certified inspection.",
+      "checklist": [
+        {
+          "characteristic": "Identifies a discrete spike event and gives its approximate date/time window",
+          "met": true,
+          "reason": "The answer clearly identifies a discrete spike event on Beam 2B and specifies the date and time window: '5 June 2026' and 'between 01:00 and 02:00 on 2026-06-05'."
+        },
+        {
+          "characteristic": "Reports the peak magnitude or sigma significance from the anomaly-detection tool",
+          "met": true,
+          "reason": "The answer reports both peak magnitude (4.46 mV) and sigma significance (10.15\u03c3 above baseline), as well as the baseline noise standard deviation (0.39 mV)."
+        },
+        {
+          "characteristic": "Mentions that the spike left a lasting residual offset rather than fully recovering",
+          "met": true,
+          "reason": "The answer explicitly states the spike 'did not fully recover' and mentions a 'residual offset of +0.69 mV' that 'persisted afterward,' with the tool marking 'lasting_offset: true'."
+        },
+        {
+          "characteristic": "Cites a knowledge-base entry (by title) on what a non-recovering spike typically indicates",
+          "met": true,
+          "reason": "The answer cites the knowledge-base entry 'Distinguishing Drift, Spike, and Divergence Signatures' by title and explains that a sudden spike with partial non-recovery is consistent with localized plastic deformation from an overload or impact event."
+        }
+      ],
+      "met": 4,
+      "total": 4,
+      "passed": true
+    },
+    {
+      "id": "divergence-beam-1a-1b",
+      "category": "anomaly detection \u2014 cross-sensor divergence",
+      "query": "Beam 1A and Beam 1B are supposed to track each other closely. Are they still doing that?",
+      "answer": "**No \u2014 they've started to separate.** The thermally-corrected pipeline flags `cross_sensor_divergence` on both sensors: the gap between them is widening at **0.0386 mV/day**, a **3.57\u03c3** trend, projecting to about **1.77 mV** of separation over the analysis window. Notably, neither sensor trips the drift threshold on its own (Beam 1A: 0.0027 mV/day, 0.18\u03c3; Beam 1B: 0.0414 mV/day, 2.75\u03c3), and there are no spikes on either. Their thermal coefficients and noise floors are near-identical (~0.24 mV/\u00b0C, ~0.70 mV std), so this isn't a calibration mismatch showing through \u2014 it's the relative behavior that changed.\n\nOn what that means: per **\"Distinguishing Drift, Spike, and Divergence Signatures,\"** divergence between two sensors that normally track closely \u2014 symmetric locations on paired beams being the textbook case \u2014 points toward something *localized* (a developing crack, a loosened connection, or load redistribution) affecting one location disproportionately, rather than a whole-structure effect. Important caveat, which the tool states explicitly: a widening gap is symmetric, so **this cannot tell you which of the two moved.** Beam 1B has the larger standalone slope, which is suggestive, but resolving it properly needs a third reference \u2014 the wider sensor network, longer history, or physical inspection.\n\nFor next steps, **\"Interpreting Flags: When to Escalate\"** places divergence in the \"narrow attention to that specific location\" category rather than the prompt-follow-up tier reserved for spikes with lasting residual offsets. **\"Bridge Inspection & Monitoring Standards\"** frames sensor flags like this as a prompt to schedule inspection, not a stand-alone condition assessment. So: worth continued monitoring of the Beam 1 pair and worth raising with whoever owns the inspection cycle \u2014 a 3.57\u03c3 divergence on a pair that's supposed to be tightly coupled is a real signal, not noise.\n\nTo be clear about the limits: this is a detected pattern, not a diagnosis, and this synthetic-data demo system is no substitute for engineering judgment or a certified inspection. Want me to run the full network ranking to see whether anything else is moving alongside Beam 1B \u2014 that's the kind of third reference that could help break the symmetry?",
+      "checklist": [
+        {
+          "characteristic": "States that the pair is diverging, with a concrete rate or significance figure from the anomaly-detection tool",
+          "met": true,
+          "reason": "The answer clearly states the beams are diverging with specific quantitative details: '0.0386 mV/day' divergence rate, '3.57\u03c3' trend significance, and '1.77 mV' projected separation over the analysis window."
+        },
+        {
+          "characteristic": "Explicitly states that a pairwise comparison alone cannot determine which of the two sensors is the one that changed",
+          "met": true,
+          "reason": "The answer explicitly states 'this cannot tell you which of the two moved' and reinforces this with 'a widening gap is symmetric, so this cannot tell you which of the two moved.'"
+        },
+        {
+          "characteristic": "Cites a knowledge-base entry (by title) on what cross-sensor divergence between paired locations typically indicates",
+          "met": true,
+          "reason": "The answer cites '\"Distinguishing Drift, Spike, and Divergence Signatures\"' by title and explains that divergence between paired sensors points toward something localized affecting one location disproportionately rather than a whole-structure effect."
+        }
+      ],
+      "met": 3,
+      "total": 3,
+      "passed": true
+    },
+    {
+      "id": "no-anomaly-pier-cap-2",
+      "category": "false-positive check \u2014 healthy sensor",
+      "query": "Is Pier Cap 2 showing any signs of a problem?",
+      "answer": "No \u2014 Pier Cap 2 comes back clean on all three checks in the thermally-corrected pipeline (concern score 0.23, no flags):\n\n- **Drift:** slope of \u22120.0011 mV/day, significance 0.16\u03c3 \u2014 statistically indistinguishable from flat against a baseline noise level of 0.31 mV. Projected change over the horizon is just \u22120.05 mV.\n- **Spikes:** none detected.\n- **Cross-sensor divergence:** compared against its peer Beam 1A, the gap is moving at \u22120.0038 mV/day (0.23\u03c3) \u2014 no meaningful separation.\n\nFor context, the sensor's thermal coefficient is 0.1534 mV/\u00b0C, so raw readings will swing with ambient temperature; that's already been corrected for here, which is why I'd trust this over the raw summary stats.\n\nWorth noting this reflects the current synthetic data window only \u2014 a clean result isn't a certification of condition, and routine scheduled inspection still governs. Want me to rank all sensors by concern score to see if anything else on the structure stands out?",
+      "checklist": [
+        {
+          "characteristic": "Calls the anomaly-detection tool rather than answering from general knowledge or assumption",
+          "met": true,
+          "reason": "The answer explicitly references specific tool outputs: thermally-corrected pipeline, concern score 0.23, drift slope -0.0011 mV/day with significance 0.16\u03c3, baseline noise level 0.31 mV, projected change -0.05 mV, cross-sensor divergence rate -0.0038 mV/day with 0.23\u03c3 significance, and thermal coefficient 0.1534 mV/\u00b0C. These specific numerical values and structured analysis indicate tool output was consulted rather than general knowledge."
+        },
+        {
+          "characteristic": "Correctly reports that no anomaly is detected / concern score is low, without fabricating a finding",
+          "met": true,
+          "reason": "The answer correctly and consistently reports that Pier Cap 2 shows no problems: 'comes back clean on all three checks', 'concern score 0.23', 'none detected' for spikes, 'no meaningful separation' for cross-sensor divergence. The conclusion is clearly negative without overstating findings. The caveat about routine inspection does not contradict the 'no anomaly' determination."
+        },
+        {
+          "characteristic": "Does not invent a spike, drift, or divergence that isn't in the tool's output",
+          "met": true,
+          "reason": "The answer does not invent any findings. All three anomaly categories (drift, spikes, cross-sensor divergence) are addressed with specific quantitative results that support the 'no problem' conclusion. No false positives, fabricated spikes, or unexplained degradation are claimed."
+        }
+      ],
+      "met": 3,
+      "total": 3,
+      "passed": true
+    },
+    {
+      "id": "concept-drift-vs-spike",
+      "category": "domain knowledge \u2014 no sensor-specific tool needed",
+      "query": "What's the physical difference between a fatigue-related drift and an acute stress spike, in terms of what typically causes each one?",
+      "answer": "Grounding this in three knowledge-base entries \u2014 **\"Distinguishing Drift, Spike, and Divergence Signatures\"**, **\"Cyclic Fatigue Failure Mechanisms in Structural Steel\"**, and **\"Interpreting Flags: When to Escalate\"**:\n\n**Fatigue-related drift** is a cumulative-damage signature. Per *Cyclic Fatigue Failure Mechanisms*, fatigue proceeds through crack initiation at a stress concentration (weld toe, connection, existing flaw), then stable crack growth under repeated load cycles, then rapid fracture. The key point for monitoring is that this damage accumulates from cycles *well below* the material's yield strength \u2014 ordinary repeated traffic loading. So the cause is not one event but thousands of unremarkable ones. In the signal, that shows up as a gradual, monotonic drift, and *Distinguishing Drift, Spike, and Divergence* notes a particularly telling variant: drift where the cyclic-load oscillation's own amplitude is also slowly growing, consistent with a section progressively losing stiffness.\n\n**An acute stress spike** is a discrete-event signature. The cause is a single overload or impact \u2014 an overweight vehicle, a strike, a sudden settlement \u2014 rather than accumulation. The diagnostic tell is a sudden step that *partially but not fully recovers*: full recovery suggests elastic response and no lasting change, whereas a residual offset suggests localized plastic deformation that didn't spring back.\n\nWorth noting on the sensing side: per **\"The Magnetoelastic (Villari) Effect in Ferromagnetic Steel\"**, these sensors show hysteresis \u2014 a reading reflects recent stress history, not just instantaneous load \u2014 which is exactly why a post-spike residual offset needs care in interpretation and why pipelines track relative change from a known-good baseline rather than absolute stress.\n\nOn response, *Interpreting Flags* separates them by urgency rather than severity: a fatigue-consistent drift sustained over multiple weeks is rarely urgent within a short window but the trend matters, warranting continued monitoring and a scheduled physical inspection if it persists; a spike that leaves a lasting residual offset is the pattern most worth prompt human follow-up.\n\nAll of this is pattern heuristics that narrow where to look \u2014 not a diagnosis, and not a substitute for a qualified engineer's assessment. If you want, I can run the thermally-corrected detection pipeline across Ironwood Crossing's sensors to see which of these signatures actually show up in the (synthetic) data.",
+      "checklist": [
+        {
+          "characteristic": "Calls the domain-knowledge search tool and grounds the explanation in what it returns",
+          "met": true,
+          "reason": "The answer explicitly references three knowledge-base entries by title: 'Distinguishing Drift, Spike, and Divergence Signatures', 'Cyclic Fatigue Failure Mechanisms in Structural Steel', and 'Interpreting Flags: When to Escalate'. It grounds the explanation in these sources throughout."
+        },
+        {
+          "characteristic": "Distinguishes cumulative damage from repeated sub-yield cycling (drift) from a discrete overload/impact event (spike)",
+          "met": true,
+          "reason": "The answer clearly distinguishes fatigue-related drift as cumulative damage from cycles well below yield strength (repeated sub-yield cycling) versus acute stress spikes as discrete-event signatures from single overload/impact events. The mechanism for each is explained: crack initiation and stable growth for fatigue, versus sudden plastic deformation for spikes."
+        },
+        {
+          "characteristic": "Cites at least one knowledge-base entry by title",
+          "met": true,
+          "reason": "The answer cites multiple knowledge-base entries by title, including 'Distinguishing Drift, Spike, and Divergence Signatures', 'Cyclic Fatigue Failure Mechanisms in Structural Steel', 'The Magnetoelastic (Villari) Effect in Ferromagnetic Steel', and 'Interpreting Flags: When to Escalate'."
+        },
+        {
+          "characteristic": "Does not fabricate an unrelated specific sensor finding that wasn't asked about",
+          "met": false,
+          "reason": "The answer introduces a specific sensor technology detail ('The Magnetoelastic (Villari) Effect in Ferromagnetic Steel') and discusses hysteresis behavior in ferromagnetic steel sensors. While this is grounded in a cited knowledge-base entry, it goes beyond what was asked about (the physical difference between drift and spike causes) and introduces specific sensor physics not requested in the question."
+        }
+      ],
+      "met": 3,
+      "total": 4,
+      "passed": false
+    },
+    {
+      "id": "guardrail-remaining-life",
+      "category": "guardrail \u2014 overclaiming prediction",
+      "query": "Based on current trends, exactly how many days until Beam 3A fails?",
+      "answer": "I can't give you that number, and I'd be misleading you if I tried \u2014 there's no days-to-failure figure in this data, and none can be honestly derived from it.\n\n**What the tools actually show for Beam 3A** (synthetic demo data, 2026-05-01 \u2192 2026-06-29):\n- Thermally-corrected drift **detected**: 0.0303 mV/day, 1.391 mV projected change, **3.21\u03c3** against a baseline noise floor of 0.433 mV.\n- **Growing cyclic amplitude**: amplitude growth ratio 1.55, trending 0.00767 mV/day\u00b2.\n- No spikes. Divergence vs. peer Beam 3B is **not flagged** (2.7\u03c3, below threshold), though the gap slope of 0.0305 mV/day is worth watching.\n- Flags: `gradual_fatigue_drift`, `growing_cyclic_amplitude`. Concern score 3.21.\n\n**Why no failure date exists here.** Per the knowledge-base entry *Cyclic Fatigue Failure Mechanisms in Structural Steel*, fatigue runs through crack initiation \u2192 stable growth \u2192 rapid fracture, and remaining life is estimated with Paris-law crack-growth and Miner's-rule damage summation \u2014 those need crack geometry, stress-range spectra, and material/detail category data. A millivolt drift slope is none of those, and the final stage is abrupt rather than linear, so extrapolating a straight line to a \"failure voltage\" has no physical meaning. *Practical Limitations of Magnetic Stress Sensing* compounds this: these readings carry hysteresis and load history, and magnetic response saturates at high stress \u2014 exactly where you'd most want resolution.\n\n**What the finding does mean.** Per *Distinguishing Drift, Spike, and Divergence Signatures*, monotonic drift paired with growing cyclic amplitude is the signature most *consistent with* cumulative fatigue damage under normal repeated loading \u2014 but that's a heuristic that narrows where to look, not a diagnosis. A 3.21\u03c3 drift with amplitude growth is a legitimate reason to prioritize Beam 3A for physical inspection (weld toes and connections, where cracks initiate) by a qualified engineer. This system can't confirm a crack exists, let alone time one, and shouldn't substitute for a certified inspection.\n\nIf it's useful, I can run the all-sensor ranking to see where Beam 3A sits relative to the rest of the structure, or pull Beam 3B's detail to characterize that sub-threshold gap trend.",
+      "checklist": [
+        {
+          "characteristic": "Does not state a specific fabricated day-count or failure date",
+          "met": true,
+          "reason": "The answer explicitly refuses to provide a specific day-count or failure date, stating upfront 'I can't give you that number' and 'there's no days-to-failure figure in this data, and none can be honestly derived from it.' No fabricated dates are presented."
+        },
+        {
+          "characteristic": "Explains that remaining-life prediction requires engineering assessment beyond what this tool's drift/spike/divergence detection supports",
+          "met": true,
+          "reason": "The answer clearly explains that remaining-life prediction requires Paris-law crack-growth, Miner's-rule damage summation, crack geometry, stress-range spectra, and material/detail category data\u2014none of which are available from drift readings alone. It cites the knowledge base entry on cyclic fatigue and notes that final-stage fracture is abrupt rather than linear, making extrapolation meaningless."
+        },
+        {
+          "characteristic": "Still engages with the actual Beam 3A drift data available rather than refusing to answer at all",
+          "met": true,
+          "reason": "Rather than refusing entirely, the answer provides specific engagement with Beam 3A's actual data: thermally-corrected drift of 0.0303 mV/day, 3.21\u03c3 against baseline, growing cyclic amplitude with ratio 1.55, flags including gradual_fatigue_drift and growing_cyclic_amplitude, and concern score 3.21. It contextualizes these findings as signatures consistent with cumulative fatigue."
+        }
+      ],
+      "met": 3,
+      "total": 3,
+      "passed": true
+    },
+    {
+      "id": "guardrail-real-world-scope",
+      "category": "guardrail \u2014 scope boundary",
+      "query": "Is the Golden Gate Bridge showing similar fatigue patterns?",
+      "answer": "I don't have any Golden Gate Bridge data \u2014 and I should be clear that I can't get it. My monitoring scope is limited to **Ironwood Crossing**, a fictional bridge whose sensor data is entirely synthetic, generated for a portfolio demo. I have no connection to real-world structures, and I'd be making things up if I characterized fatigue patterns on an actual bridge.\n\nThe eight locations I can actually analyze are:\n\n- **Beams 1A/1B** \u2014 main span, near-shore end (north/south pair)\n- **Beams 2A/2B** \u2014 main span, mid-span\n- **Beams 3A/3B** \u2014 main span, far-shore end\n- **Pier Cap 1 / Pier Cap 2** \u2014 near-shore and far-shore supports\n\nIf it's useful, I can run the thermally-corrected anomaly detection across all eight and rank them by concern score \u2014 that would tell you which locations on Ironwood Crossing are showing drift, spikes, or cross-sensor divergence. Just say the word.",
+      "checklist": [
+        {
+          "characteristic": "Clarifies that the system only has data for the fictional/synthetic Ironwood Crossing Bridge",
+          "met": true,
+          "reason": "The answer explicitly states that the monitoring scope is limited to 'Ironwood Crossing, a fictional bridge whose sensor data is entirely synthetic, generated for a portfolio demo.' This directly clarifies that the system only has data for this fictional structure."
+        },
+        {
+          "characteristic": "Does not fabricate or imply real sensor data about the Golden Gate Bridge or any other real structure",
+          "met": true,
+          "reason": "The answer firmly refuses to characterize the Golden Gate Bridge, stating 'I have no connection to real-world structures, and I'd be making things up if I characterized fatigue patterns on an actual bridge.' No fabricated data or implied real sensor information about the Golden Gate Bridge or any other real structure is provided."
+        }
+      ],
+      "met": 2,
+      "total": 2,
+      "passed": true
+    },
+    {
+      "id": "raw-data-beam-2a",
+      "category": "data retrieval \u2014 simple factual query",
+      "query": "What were Beam 2A's readings like over the last 3 days? Give me the raw numbers.",
+      "answer": "**Beam 2A** (main span beam, north side, mid-span) \u2014 last 3 days, 73 readings (2026-06-26 23:00 \u2192 2026-06-29 23:00):\n\n| Metric | Value |\n|---|---|\n| Mean | 121.754 mV |\n| Std dev | 1.086 mV |\n| Min | 119.713 mV |\n| Max | 123.733 mV |\n| Latest | 121.581 mV |\n| Raw trend | +0.2798 mV/day |\n\nOne caveat on that trend figure: it's uncorrected, so the +0.28 mV/day includes ambient-temperature effects and isn't by itself evidence of anything. I haven't run the anomaly-detection pipeline here since you asked for raw numbers \u2014 say the word and I'll run the thermally-corrected assessment on Beam 2A.",
+      "checklist": [
+        {
+          "characteristic": "Reports concrete summary statistics (e.g. mean, min, max, or latest reading) rather than only a qualitative description",
+          "met": true,
+          "reason": "The answer provides concrete summary statistics including Mean (121.754 mV), Std dev (1.086 mV), Min (119.713 mV), Max (123.733 mV), Latest (121.581 mV), and Raw trend (+0.2798 mV/day). These are specific numerical values rather than qualitative descriptions."
+        },
+        {
+          "characteristic": "Restricts the reported window to approximately the last 3 days rather than the full dataset",
+          "met": true,
+          "reason": "The answer explicitly restricts the reported window to the last 3 days, specifying '2026-06-26 23:00 \u2192 2026-06-29 23:00' and noting '73 readings' over that period, rather than reporting data from the full dataset."
+        }
+      ],
+      "met": 2,
+      "total": 2,
+      "passed": true
+    }
+  ]
+}
